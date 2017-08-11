@@ -1,6 +1,6 @@
 # parallel-processor
 
-You can use this "parallel-processor" library to run many pieces of code at once--and the collect the results at the end..
+You can use this "parallel-processor" library to run many pieces of code at once--and the collect the results at the end.
 
 Here's an example:
 
@@ -27,7 +27,7 @@ while ($processor->getResult($id, $result)) {
 
 $t1 = microtime(true);
 
-echo "\ntotal time: ", $t1 - $t0, "\n";
+echo "\n", "total time: ", $t1 - $t0, "\n";
 ```
 
 Here's the output:
@@ -39,4 +39,4 @@ large: done
 total time: 3.0021669864655
 ```
 
-You can see that this script finished in just three seconds--even though the jobs slept for a total of _six_ seconds. The parallel processing effectively made everything run twice as fast!
+You can see that this script finished in just three seconds--even though the jobs slept for a total of _six_ seconds. The parallel processor did everything in parallel.
