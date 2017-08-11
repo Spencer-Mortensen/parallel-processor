@@ -5,14 +5,6 @@ You can use this "parallel-processor" library to run many pieces of code at once
 Here's an example:
 
 ```php
-<?php
-
-namespace Example;
-
-use SpencerMortensen\ParallelProcessor\Processor;
-
-require 'bootstrap.php';
-
 $processor = new Processor();
 
 $t0 = microtime(true);
@@ -40,3 +32,5 @@ total time: 3.0021669864655
 ```
 
 You can see that this script finished in just three seconds--even though the jobs slept for a total of _six_ seconds. The parallel processor did everything in parallel.
+
+You can see the full source code for this example in the [example](tree/master/example) directory.
