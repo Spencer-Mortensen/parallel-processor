@@ -32,3 +32,6 @@ total time: 3.0021669864655
 ```
 
 You can see that this script finished in just three seconds--even though the jobs slept for a total of _six_ seconds. The parallel processor did everything in parallel.
+
+You can include this library through Composer:
+composer require [spencer-mortensen/parallel-processor](https://packagist.org/packages/spencer-mortensen/parallel-processor):~1.0
