@@ -35,6 +35,4 @@ You can see that this script finished in just three seconds--even though the job
 
 You can include this library through Composer:
 
-```bash
-composer require [spencer-mortensen/parallel-processor](https://packagist.org/packages/spencer-mortensen/parallel-processor):~1.0
-```
+> composer require [spencer-mortensen/parallel-processor](https://packagist.org/packages/spencer-mortensen/parallel-processor):~1.0
