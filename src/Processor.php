@@ -146,20 +146,22 @@ class Processor
 
 	private static function read($stream)
 	{
-		for ($output = ''; !feof($stream); $output .= $data) {
-			$data = fread($stream, self::$CHUNK_SIZE);
+		for ($output = ''; !feof($stream); $output .= $chunk) {
+			$chunk = fread($stream, self::$CHUNK_SIZE);
 
-			if ($data === false) {
+			if ($chunk === false) {
 				throw new Exception('Unable to read from the socket stream');
 			}
 		}
 
-		return $output;
+		return unserialize($output);
 	}
 
 	private static function write($stream, $data)
 	{
-		if (fwrite($stream, $data) !== strlen($data)) {
+		$output = serialize($data);
+
+		if (fwrite($stream, $output) !== strlen($output)) {
 			throw new Exception('Unable to write to the socket stream');
 		}
 	}
