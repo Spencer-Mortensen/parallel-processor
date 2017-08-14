@@ -68,7 +68,13 @@ class Processor
 
 	public function startJob($id, Job $job)
 	{
-		$this->jobs[$id] = $this->getJobStream($job);
+		$stream = $this->getJobStream($job);
+
+		if ($id === null) {
+			$this->jobs[] = $stream;
+		} else {
+			$this->jobs[$id] = $stream;
+		}
 	}
 
 	private function getJobStream(Job $job)
