@@ -2,21 +2,41 @@
 
 namespace Example;
 
-use SpencerMortensen\ParallelProcessor\Job;
+use SpencerMortensen\ParallelProcessor\Shell\ShellJob;
 
-class SleepJob implements Job
+class SleepJob implements ShellJob
 {
-	private $sleepSeconds;
+	/** @var integer */
+	private $input;
 
-	public function __construct($sleepSeconds)
+	/** @var string */
+	private $output;
+
+	public function __construct($input, &$output = null)
 	{
-		$this->sleepSeconds = $sleepSeconds;
+		$this->input = $input;
+		$this->output = &$output;
 	}
 
-	public function run()
+	public function run($send)
 	{
-		sleep($this->sleepSeconds);
+		$sleeper = new Sleeper();
+		$message = $sleeper->sleep($this->input);
 
-		return $this->sleepSeconds;
+		call_user_func($send, $message);
+	}
+
+	public function receive($message)
+	{
+		$this->output = $message;
+	}
+
+	public function getCommand()
+	{
+		$scriptPath = dirname(__DIR__) . '/bin/sleep.php';
+
+		return 'php' .
+			' ' . escapeshellarg($scriptPath) .
+			' ' . escapeshellarg($this->input);
 	}
 }

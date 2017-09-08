@@ -23,9 +23,11 @@
  * @copyright 2017 Spencer Mortensen
  */
 
-namespace SpencerMortensen\ParallelProcessor;
+namespace SpencerMortensen\ParallelProcessor\Shell;
 
-interface Job
+use SpencerMortensen\ParallelProcessor\Fork\ForkJob;
+
+interface ShellJob extends ForkJob
 {
-	public function run();
+	public function getCommand();
 }

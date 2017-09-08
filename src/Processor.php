@@ -29,146 +29,67 @@ use Exception;
 
 class Processor
 {
-	private static $CHUNK_SIZE = 8192;
-
-	/** @var array */
-	private $jobs;
-
-	/** @var array */
-	private $results;
+	/** @var integer */
+	private static $TIMEOUT_SECONDS = 3;
 
 	/** @var integer */
-	private $timeoutSeconds;
+	private static $TIMEOUT_MICROSECONDS = 0;
 
 	/** @var integer */
-	private $timeoutMicroseconds;
+	private $id;
 
-	public function __construct($maximumBlockingSeconds = null)
+	/** @var Worker[] */
+	private $workers;
+
+	/** @var resource[] */
+	private $streams;
+
+	public function __construct()
 	{
-		$this->setTimeouts($maximumBlockingSeconds);
-		$this->jobs = array();
-		$this->results = array();
+		$this->id = 0;
+		$this->workers = array();
+		$this->streams = array();
 	}
 
-	private function setTimeouts($seconds)
+	public function run(Worker $worker)
 	{
-		if ($seconds === null) {
-			$this->timeoutSeconds = null;
-			$this->timeoutMicroseconds = null;
-		} else {
-			$this->timeoutSeconds = (integer)$seconds;
-			$this->timeoutMicroseconds = self::fromSecondsToMicroseconds($seconds - $this->timeoutSeconds);
-		}
+		$stream = $worker->run();
+
+		$id = $this->id++;
+
+		$this->workers[$id] = $worker;
+		$this->streams[$id] = $stream;
 	}
 
-	private static function fromSecondsToMicroseconds($seconds)
+	public function finish()
 	{
-		return (integer)round($seconds * 1000000);
-	}
-
-	public function startJob($id, Job $job)
-	{
-		$stream = $this->getJobStream($job);
-
-		if ($id === null) {
-			$this->jobs[] = $stream;
-		} else {
-			$this->jobs[$id] = $stream;
-		}
-	}
-
-	private function getJobStream(Job $job)
-	{
-		list($a, $b) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
-
-		if ($a === null) {
-			throw new Exception('Unable to create a stream socket pair');
-		}
-
-		$pid = pcntl_fork();
-
-		if ($pid === 0) {
-			fclose($b);
-			self::write($a, $job->run());
-			fclose($a);
-
-			exit(0);
-		}
-
-		if (0 < $pid) {
-			fclose($a);
-
-			stream_set_blocking($b, false);
-			stream_set_chunk_size($b, self::$CHUNK_SIZE);
-
-			return $b;
-		}
-
-		throw new Exception('Unable to fork the current process');
-	}
-
-	public function getResult(&$id, &$result)
-	{
-		return $this->getReadyResult($id, $result) || (
-			$this->waitForResult() &&
-			$this->getReadyResult($id, $result)
-		);
-	}
-
-	private function getReadyResult(&$id, &$result)
-	{
-		if (count($this->results) === 0) {
-			return false;
-		}
-
-		$id = key($this->results);
-		$result = $this->results[$id];
-
-		unset($this->results[$id]);
-		return true;
+		while ($this->waitForResult());
 	}
 
 	private function waitForResult()
 	{
-		if (count($this->jobs) === 0) {
+		if (count($this->streams) === 0) {
 			return false;
 		}
 
-		$ready = $this->jobs;
+		$ready = $this->streams;
 		$x = null;
 
-		if (stream_select($ready, $x, $x, $this->timeoutSeconds, $this->timeoutMicroseconds) === 0) {
+		if (stream_select($ready, $x, $x, self::$TIMEOUT_SECONDS, self::$TIMEOUT_MICROSECONDS) === 0) {
 			throw new Exception('No jobs completed within the timeout period');
 		}
 
-		foreach ($ready as $id => $stream) {
-			unset($this->jobs[$id]);
-			$this->results[$id] = self::read($stream);
-			fclose($stream);
+		foreach ($ready as $id => $resource) {
+			$stream = new Stream($resource);
+			$message = $stream->read();
+			fclose($resource);
+
+			$worker = $this->workers[$id];
+			$worker->receive($message);
+
+			unset($this->workers[$id], $this->streams[$id]);
 		}
 
 		return true;
-	}
-
-	private static function read($stream)
-	{
-		for ($output = ''; !feof($stream); $output .= $chunk) {
-			$chunk = fread($stream, self::$CHUNK_SIZE);
-
-			if ($chunk === false) {
-				throw new Exception('Unable to read from the socket stream');
-			}
-		}
-
-		return unserialize($output);
-	}
-
-	private static function write($stream, $data)
-	{
-		$output = serialize($data);
-
-		if (fwrite($stream, $output) !== strlen($output)) {
-			throw new Exception('Unable to write to the socket stream');
-		}
 	}
 }

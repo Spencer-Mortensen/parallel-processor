@@ -5,34 +5,31 @@ The "parallel-processor" is a PHP library that lets you run many pieces of code 
 Here's an example:
 
 ```php
-$processor = new Processor();
+$processor = new ForkProcessor();
 
 $t0 = microtime(true);
 
-$processor->startJob('medium', new SleepJob(2));
-$processor->startJob('large', new SleepJob(3));
-$processor->startJob('small', new SleepJob(1));
+$processor->start(new SleepJob(2, $results[]));
+$processor->start(new SleepJob(3, $results[]));
+$processor->start(new SleepJob(1, $results[]));
 
-while ($processor->getResult($id, $result)) {
-    echo "{$id}: done\n";
-}
+$processor->finish();
 
 $t1 = microtime(true);
 
-echo "\n", "total time: ", $t1 - $t0, "\n";
+echo implode("\n", $results), "\n";
+echo "\nTotal time: ", $t1 - $t0, " seconds\n";
 ```
 
 Here's the output:
 ```
-small: done
-medium: done
-large: done
+Slept for 2 seconds.
+Slept for 3 seconds.
+Slept for 1 seconds.
 
-total time: 3.0021669864655
+Total time: 3.0033020973206 seconds
 ```
-
-You can see that this script finished in just three seconds--even though the jobs slept for a total of _six_ seconds. The parallel processor did everything in parallel.
 
 You can include this library through Composer:
 
-> composer require [spencer-mortensen/parallel-processor](https://packagist.org/packages/spencer-mortensen/parallel-processor):~1.0
+> composer require [spencer-mortensen/parallel-processor](https://packagist.org/packages/spencer-mortensen/parallel-processor):~2.0
