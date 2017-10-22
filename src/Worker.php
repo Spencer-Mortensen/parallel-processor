@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with parallel-processor. If not, see <http://www.gnu.org/licenses/>.
  *
- * @author Spencer Mortensen <spencer@testphp.org>
+ * @author Spencer Mortensen <spencer@lens.guide>
  * @license http://www.gnu.org/licenses/lgpl-3.0.html LGPL-3.0
  * @copyright 2017 Spencer Mortensen
  */

@@ -9,12 +9,12 @@
         "asynchronous",
         "multi-threaded"
     ],
-    "homepage": "https://github.com/Spencer-Mortensen/parallel-processor",
+    "homepage": "https://github.com/spencer-mortensen/parallel-processor",
     "license": "LGPL-3.0",
     "authors": [
         {
             "name": "Spencer Mortensen",
-            "email": "spencer@testphp.org",
+            "email": "spencer@lens.guide",
             "homepage": "http://spencermortensen.com",
             "role": "Developer"
         }
