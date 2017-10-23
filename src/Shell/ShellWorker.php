@@ -36,9 +36,6 @@ class ShellWorker implements Worker
 	/** @var integer */
 	const STDERR = 2;
 
-	/** @var integer */
-	const DATA = 3;
-
 	/** @var ShellJob */
 	private $job;
 
@@ -54,8 +51,7 @@ class ShellWorker implements Worker
 	{
 		$descriptor = array(
 			self::STDOUT => array('pipe', 'w'),
-			self::STDERR => array('pipe', 'w'),
-			self::DATA => array('pipe', 'w')
+			self::STDERR => array('pipe', 'w')
 		);
 
 		$command = $this->job->getCommand();
@@ -66,10 +62,9 @@ class ShellWorker implements Worker
 		}
 
 		fclose($pipes[self::STDOUT]);
-		fclose($pipes[self::STDERR]);
 
 		$this->process = $process;
-		return $pipes[self::DATA];
+		return $pipes[self::STDERR];
 	}
 
 	public function receive($message)

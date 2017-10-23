@@ -39,7 +39,7 @@ class ShellSlave
 
 	public function run()
 	{
-		$path = 'php://fd/' . ShellWorker::DATA;
+		$path = 'php://fd/' . ShellWorker::STDERR;
 
 		$send = function ($message) use ($path) {
 			file_put_contents($path, $message);
