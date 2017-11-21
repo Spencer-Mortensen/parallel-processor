@@ -25,8 +25,6 @@
 
 namespace SpencerMortensen\ParallelProcessor;
 
-use Exception;
-
 class Stream
 {
 	/** @var integer */
@@ -48,14 +46,14 @@ class Stream
 	public function read()
 	{
 		if (!is_resource($this->resource)) {
-			throw new Exception('Not a resource');
+			throw ParallelProcessorException::readError($this->resource, null);
 		}
 
 		for ($contents = ''; !feof($this->resource); $contents .= $chunk) {
 			$chunk = fread($this->resource, self::$CHUNK_SIZE);
 
 			if ($chunk === false) {
-				throw new Exception('Unable to read from the stream');
+				throw ParallelProcessorException::readError($this->resource, $contents);
 			}
 		}
 
@@ -65,11 +63,11 @@ class Stream
 	public function write($contents)
 	{
 		if (!is_resource($this->resource)) {
-			throw new Exception('Not a resource');
+			throw ParallelProcessorException::writeError($this->resource, $contents);
 		}
 
 		if (fwrite($this->resource, $contents) !== strlen($contents)) {
-			throw new Exception('Unable to write to the stream');
+			throw ParallelProcessorException::writeError($this->resource, $contents);
 		}
 	}
 

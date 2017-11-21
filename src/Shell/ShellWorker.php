@@ -25,7 +25,7 @@
 
 namespace SpencerMortensen\ParallelProcessor\Shell;
 
-use Exception;
+use SpencerMortensen\ParallelProcessor\ParallelProcessorException;
 use SpencerMortensen\ParallelProcessor\Worker;
 
 class ShellWorker implements Worker
@@ -58,7 +58,7 @@ class ShellWorker implements Worker
 		$process = proc_open($command, $descriptor, $pipes);
 
 		if (!is_resource($process)) {
-			throw new Exception('Unable to start a new process');
+			throw ParallelProcessorException::openProcessError();
 		}
 
 		fclose($pipes[self::STDOUT]);

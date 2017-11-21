@@ -25,8 +25,6 @@
 
 namespace SpencerMortensen\ParallelProcessor;
 
-use Exception;
-
 class Processor
 {
 	/** @var integer */
@@ -76,7 +74,7 @@ class Processor
 		$x = null;
 
 		if (stream_select($ready, $x, $x, self::$TIMEOUT_SECONDS, self::$TIMEOUT_MICROSECONDS) === 0) {
-			throw new Exception('No jobs completed within the timeout period');
+			throw ParallelProcessorException::incomplete();
 		}
 
 		foreach ($ready as $id => $resource) {

@@ -25,7 +25,7 @@
 
 namespace SpencerMortensen\ParallelProcessor\Fork;
 
-use Exception;
+use SpencerMortensen\ParallelProcessor\ParallelProcessorException;
 use SpencerMortensen\ParallelProcessor\Stream;
 use SpencerMortensen\ParallelProcessor\Worker;
 
@@ -47,7 +47,7 @@ class ForkWorker implements Worker
 		list($a, $b) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
 
 		if ($a === null) {
-			throw new Exception('Unable to create a stream socket pair');
+			throw ParallelProcessorException::socketPairError();
 		}
 
 		$pid = pcntl_fork();
@@ -77,7 +77,7 @@ class ForkWorker implements Worker
 			return $a;
 		}
 
-		throw new Exception('Unable to fork the current process');
+		throw ParallelProcessorException::forkError();
 	}
 
 	public function receive($message)
