@@ -25,6 +25,8 @@
 
 namespace SpencerMortensen\ParallelProcessor;
 
+use SpencerMortensen\ParallelProcessor\Stream\Stream;
+
 class Processor
 {
 	/** @var integer */
@@ -36,8 +38,8 @@ class Processor
 	/** @var integer */
 	private $id;
 
-	/** @var Worker[] */
-	private $workers;
+	/** @var Process[] */
+	private $processes;
 
 	/** @var resource[] */
 	private $streams;
@@ -45,18 +47,18 @@ class Processor
 	public function __construct()
 	{
 		$this->id = 0;
-		$this->workers = array();
+		$this->processes = array();
 		$this->streams = array();
 	}
 
-	public function run(Worker $worker)
+	public function start(Process $process)
 	{
-		$stream = $worker->run();
+		$stream = $process->start();
 
-		$id = $this->id++;
+		$this->processes[$this->id] = $process;
+		$this->streams[$this->id] = $stream;
 
-		$this->workers[$id] = $worker;
-		$this->streams[$id] = $stream;
+		++$this->id;
 	}
 
 	public function finish()
@@ -74,18 +76,20 @@ class Processor
 		$x = null;
 
 		if (stream_select($ready, $x, $x, self::$TIMEOUT_SECONDS, self::$TIMEOUT_MICROSECONDS) === 0) {
-			throw ParallelProcessorException::incomplete();
+			throw ProcessorException::timeout();
 		}
 
 		foreach ($ready as $id => $resource) {
 			$stream = new Stream($resource);
 			$message = $stream->read();
-			fclose($resource);
+			$stream->close();
 
-			$worker = $this->workers[$id];
-			$worker->receive($message);
+			$result = Message::deserialize($message);
 
-			unset($this->workers[$id], $this->streams[$id]);
+			$process = $this->processes[$id];
+			$process->stop($result);
+
+			unset($this->processes[$id], $this->streams[$id]);
 		}
 
 		return true;

@@ -27,11 +27,12 @@ namespace SpencerMortensen\ParallelProcessor;
 
 use Exception;
 
-class ParallelProcessorException extends Exception
+class ProcessorException extends Exception
 {
 	const CODE_READ_ERROR = 1;
 	const CODE_WRITE_ERROR = 2;
-	const CODE_INCOMPLETE = 3;
+	const CODE_TIMEOUT = 3;
+	const CODE_MESSAGE = 4;
 	const CODE_OPEN_PROCESS_ERROR = 4;
 	const CODE_SOCKET_PAIR_ERROR = 5;
 	const CODE_FORK_ERROR = 6;
@@ -127,9 +128,17 @@ class ParallelProcessorException extends Exception
 		}
 	}
 
-	public static function incomplete()
+	public static function invalidMessage($message)
 	{
-		return new self(self::CODE_INCOMPLETE, 'No jobs completed within the timeout period');
+		// TODO: show the corrupted message to the user
+		$messageText = var_export($message, true);
+
+		return new self(self::CODE_MESSAGE, "A process responded with an invalid message ({$messageText}).");
+	}
+
+	public static function timeout()
+	{
+		return new self(self::CODE_TIMEOUT, 'No jobs completed within the timeout period');
 	}
 
 	public static function openProcessError()

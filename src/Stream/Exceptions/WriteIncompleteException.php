@@ -23,16 +23,35 @@
  * @copyright 2017 Spencer Mortensen
  */
 
-namespace SpencerMortensen\ParallelProcessor\Shell;
+namespace SpencerMortensen\ParallelProcessor\Stream\Exceptions;
 
-use SpencerMortensen\ParallelProcessor\Processor;
+use Exception;
 
-class ShellProcessor extends Processor
+class WriteIncompleteException extends Exception
 {
-	public function start(ShellJob $job)
-	{
-		$worker = new ShellWorker($job);
+	const CODE_ERROR = 0;
 
-		$this->run($worker);
+	/** @var array */
+	private $data;
+
+	public function __construct($bytesSent, $bytesTotal)
+	{
+		$code = self::CODE_ERROR;
+
+		$message = "Wrote {$bytesSent} of {$bytesTotal} bytes to the output stream.";
+
+		$data = array(
+			'wrote' => $bytesSent,
+			'total' => $bytesTotal
+		);
+
+		parent::__construct($message, $code);
+
+		$this->data = $data;
+	}
+
+	public function getData()
+	{
+		return $this->data;
 	}
 }

@@ -23,17 +23,20 @@
  * @copyright 2017 Spencer Mortensen
  */
 
-namespace SpencerMortensen\ParallelProcessor;
+namespace SpencerMortensen\ParallelProcessor\Stream\Exceptions;
 
-interface Worker
+use Exception;
+
+class CloseException extends Exception
 {
-	/**
-	 * @return resource
-	 */
-	public function run();
+	const CODE_ERROR = 0;
 
-	/**
-	 * @param string $message
-	 */
-	public function receive($message);
+	public function __construct($exception)
+	{
+		$code = self::CODE_ERROR;
+
+		$message = 'Unable to close the stream.';
+
+		parent::__construct($message, $code, $exception);
+	}
 }

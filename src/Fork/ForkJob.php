@@ -27,7 +27,7 @@ namespace SpencerMortensen\ParallelProcessor\Fork;
 
 interface ForkJob
 {
-	public function run($send);
+	public function run();
 
-	public function receive($message);
+	public function stop($message);
 }

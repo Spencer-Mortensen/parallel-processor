@@ -25,9 +25,54 @@
 
 namespace SpencerMortensen\ParallelProcessor\Shell;
 
-interface ShellJob
-{
-	public function getCommand();
+use SpencerMortensen\ParallelProcessor\ProcessorException;
+use SpencerMortensen\ParallelProcessor\Process;
 
-	public function stop($message);
+class Shell implements Process
+{
+	/** @var integer */
+	const STDOUT = 1;
+
+	/** @var integer */
+	const STDERR = 2;
+
+	/** @var ShellJob */
+	private $job;
+
+	/** @var null|resource */
+	private $process;
+
+	public function __construct(ShellJob $job)
+	{
+		$this->job = $job;
+	}
+
+	public function start()
+	{
+		$descriptor = array(
+			self::STDOUT => array('pipe', 'w'),
+			self::STDERR => array('pipe', 'w')
+		);
+
+		$command = $this->job->getCommand();
+		$process = proc_open($command, $descriptor, $pipes);
+
+		if (!is_resource($process)) {
+			throw ProcessorException::openProcessError();
+		}
+
+		fclose($pipes[self::STDERR]);
+
+		$this->process = $process;
+		return $pipes[self::STDOUT];
+	}
+
+	public function stop($result)
+	{
+		if (is_resource($this->process)) {
+			proc_close($this->process);
+		}
+
+		$this->job->stop($result);
+	}
 }

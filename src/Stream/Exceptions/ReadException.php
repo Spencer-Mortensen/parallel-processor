@@ -23,16 +23,20 @@
  * @copyright 2017 Spencer Mortensen
  */
 
-namespace SpencerMortensen\ParallelProcessor\Fork;
+namespace SpencerMortensen\ParallelProcessor\Stream\Exceptions;
 
-use SpencerMortensen\ParallelProcessor\Processor;
+use Exception;
 
-class ForkProcessor extends Processor
+class ReadException extends Exception
 {
-	public function start(ForkJob $job)
-	{
-		$worker = new ForkWorker($job);
+	const CODE_ERROR = 1;
 
-		$this->run($worker);
+	public function __construct($exception)
+	{
+		$code = self::CODE_ERROR;
+
+		$message = 'Unable to read from the stream.';
+
+		parent::__construct($message, $code, $exception);
 	}
 }

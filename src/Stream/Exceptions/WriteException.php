@@ -23,11 +23,20 @@
  * @copyright 2017 Spencer Mortensen
  */
 
-namespace SpencerMortensen\ParallelProcessor\Shell;
+namespace SpencerMortensen\ParallelProcessor\Stream\Exceptions;
 
-interface ShellJob
+use Exception;
+
+class WriteException extends Exception
 {
-	public function getCommand();
+	const CODE_ERROR = 1;
 
-	public function stop($message);
+	public function __construct($exception)
+	{
+		$code = self::CODE_ERROR;
+
+		$message = 'Unable to write to the stream.';
+
+		parent::__construct($message, $code, $exception);
+	}
 }

@@ -23,11 +23,34 @@
  * @copyright 2017 Spencer Mortensen
  */
 
-namespace SpencerMortensen\ParallelProcessor\Shell;
+namespace SpencerMortensen\ParallelProcessor\Stream\Exceptions;
 
-interface ShellJob
+use Exception;
+
+class ReadIncompleteException extends Exception
 {
-	public function getCommand();
+	const CODE_ERROR = 0;
 
-	public function stop($message);
+	/** @var array */
+	private $data;
+
+	public function __construct($bytesRead)
+	{
+		$code = self::CODE_ERROR;
+
+		$message = "Read {$bytesRead} bytes from the input stream before the connection was interrupted.";
+
+		$data = array(
+			'read' => $bytesRead
+		);
+
+		parent::__construct($message, $code);
+
+		$this->data = $data;
+	}
+
+	public function getData()
+	{
+		return $this->data;
+	}
 }

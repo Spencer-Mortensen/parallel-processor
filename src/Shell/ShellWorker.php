@@ -25,54 +25,80 @@
 
 namespace SpencerMortensen\ParallelProcessor\Shell;
 
-use SpencerMortensen\ParallelProcessor\ParallelProcessorException;
-use SpencerMortensen\ParallelProcessor\Worker;
+use ErrorException;
+use Exception;
+use SpencerMortensen\Exceptions\Exceptions;
+use SpencerMortensen\ParallelProcessor\Message;
+use Throwable;
 
-class ShellWorker implements Worker
+class ShellWorker
 {
-	/** @var integer */
-	const STDOUT = 1;
+	const CODE_SUCCESS = 0;
+	const CODE_FAILURE = 1;
 
-	/** @var integer */
-	const STDERR = 2;
-
-	/** @var ShellJob */
-	private $job;
-
-	/** @var null|resource */
-	private $process;
-
-	public function __construct(ShellJob $job)
+	public function run(ShellWorkerJob $job)
 	{
-		$this->job = $job;
+		ini_set('display_errors', 'Off');
+
+		register_shutdown_function(array($this, 'shutdownFunction'));
+
+		$message = $this->getMessage($job);
+
+		$this->send($message);
 	}
 
-	public function run()
+	public function reply($result)
 	{
-		$descriptor = array(
-			self::STDOUT => array('pipe', 'w'),
-			self::STDERR => array('pipe', 'w')
-		);
+		$message = Message::serialize(Message::TYPE_RESULT, $result);
 
-		$command = $this->job->getCommand();
-		$process = proc_open($command, $descriptor, $pipes);
-
-		if (!is_resource($process)) {
-			throw ParallelProcessorException::openProcessError();
-		}
-
-		fclose($pipes[self::STDOUT]);
-
-		$this->process = $process;
-		return $pipes[self::STDERR];
+		$this->send($message);
 	}
 
-	public function receive($message)
+	private function getMessage(ShellWorkerJob $job)
 	{
-		if (is_resource($this->process)) {
-			proc_close($this->process);
+		Exceptions::enable();
+
+		try {
+			$result = $job->run();
+		} catch (Throwable $throwable) {
+			Exceptions::disable();
+			return Message::serialize(Message::TYPE_ERROR, $throwable);
+		} catch (Exception $exception) {
+			Exceptions::disable();
+			return Message::serialize(Message::TYPE_ERROR, $exception);
 		}
 
-		$this->job->receive($message);
+		Exceptions::disable();
+		return Message::serialize(Message::TYPE_RESULT, $result);
+	}
+
+	private function send($message)
+	{
+		$path = 'php://fd/' . Shell::STDOUT;
+
+		file_put_contents($path, $message . "\n");
+
+		exit;
+	}
+
+	public function shutdownFunction()
+	{
+		$error = error_get_last();
+		error_clear_last();
+
+		if (!is_array($error)) {
+			return;
+		}
+
+		$level = $error['type'];
+		$message = trim($error['message']);
+		$file = $error['file'];
+		$line = $error['line'];
+		$code = null;
+
+		$exception = new ErrorException($message, $code, $level, $file, $line);
+		$message = Message::serialize(Message::TYPE_ERROR, $exception);
+
+		$this->send($message);
 	}
 }

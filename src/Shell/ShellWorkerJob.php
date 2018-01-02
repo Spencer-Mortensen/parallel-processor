@@ -25,9 +25,7 @@
 
 namespace SpencerMortensen\ParallelProcessor\Shell;
 
-interface ShellJob
+interface ShellWorkerJob
 {
-	public function getCommand();
-
-	public function stop($message);
+	public function run();
 }

@@ -23,28 +23,17 @@
  * @copyright 2017 Spencer Mortensen
  */
 
-namespace SpencerMortensen\ParallelProcessor\Shell;
+namespace SpencerMortensen\ParallelProcessor;
 
-use SpencerMortensen\ParallelProcessor\Fork\ForkJob;
-
-class ShellSlave
+interface Process
 {
-	/** @var ForkJob */
-	private $job;
+	/**
+	 * @return resource
+	 */
+	public function start();
 
-	public function __construct(ForkJob $job)
-	{
-		$this->job = $job;
-	}
-
-	public function run()
-	{
-		$path = 'php://fd/' . ShellWorker::STDERR;
-
-		$send = function ($message) use ($path) {
-			file_put_contents($path, $message);
-		};
-
-		$this->job->run($send);
-	}
+	/**
+	 * @param string $result
+	 */
+	public function stop($result);
 }
