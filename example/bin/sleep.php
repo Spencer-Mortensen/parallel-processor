@@ -2,12 +2,13 @@
 
 namespace Example;
 
-use SpencerMortensen\ParallelProcessor\Shell\ShellSlave;
+use SpencerMortensen\ParallelProcessor\Shell\ShellWorker;
 
 require dirname(__DIR__) . '/bootstrap.php';
 
-$input = (integer)$argv[1];
-$job = new SleepJob($input);
+$duration = (integer)$GLOBALS['argv'][1];
 
-$slave = new ShellSlave($job);
-$slave->run();
+$worker = new ShellWorker();
+$job = new SleeperJob($duration);
+
+$worker->run($job);

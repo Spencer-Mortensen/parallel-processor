@@ -1,27 +1,32 @@
 <?php
 
-$classes = array(
-	'Example' => __DIR__ . '/src',
-	'SpencerMortensen\\ParallelProcessor' => dirname(__DIR__) . '/src'
-);
+call_user_func(function () {
+	$projectDirectory = dirname(__DIR__);
 
-foreach ($classes as $namespacePrefix => $libraryPath) {
-	$namespacePrefix .= '\\';
-	$namespacePrefixLength = strlen($namespacePrefix);
+	$classes = array(
+		'Example' => "{$projectDirectory}/example/src",
+		'SpencerMortensen\\Exceptions' => "{$projectDirectory}/vendor/spencer-mortensen/exceptions/src",
+		'SpencerMortensen\\ParallelProcessor' => "{$projectDirectory}/src",
+	);
 
-	$autoloader = function ($class) use ($namespacePrefix, $namespacePrefixLength, $libraryPath) {
-		if (strncmp($class, $namespacePrefix, $namespacePrefixLength) !== 0) {
-			return;
-		}
+	foreach ($classes as $namespacePrefix => $libraryPath) {
+		$namespacePrefix .= '\\';
+		$namespacePrefixLength = strlen($namespacePrefix);
 
-		$relativeClassName = substr($class, $namespacePrefixLength);
-		$relativeFilePath = strtr($relativeClassName, '\\', '/') . '.php';
-		$absoluteFilePath = "{$libraryPath}/{$relativeFilePath}";
+		$autoloader = function ($class) use ($namespacePrefix, $namespacePrefixLength, $libraryPath) {
+			if (strncmp($class, $namespacePrefix, $namespacePrefixLength) !== 0) {
+				return;
+			}
 
-		if (is_file($absoluteFilePath)) {
-			include $absoluteFilePath;
-		}
-	};
+			$relativeClassName = substr($class, $namespacePrefixLength);
+			$relativeFilePath = strtr($relativeClassName, '\\', '/') . '.php';
+			$absoluteFilePath = "{$libraryPath}/{$relativeFilePath}";
 
-	spl_autoload_register($autoloader);
-}
+			if (is_file($absoluteFilePath)) {
+				include $absoluteFilePath;
+			}
+		};
+
+		spl_autoload_register($autoloader);
+	}
+});
