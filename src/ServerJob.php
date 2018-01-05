@@ -25,15 +25,7 @@
 
 namespace SpencerMortensen\ParallelProcessor;
 
-interface Process
+interface ServerJob
 {
-	/**
-	 * @return resource
-	 */
 	public function start();
-
-	/**
-	 * @param string $result
-	 */
-	public function stop($result);
 }

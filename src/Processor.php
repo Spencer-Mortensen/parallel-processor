@@ -38,7 +38,7 @@ class Processor
 	/** @var integer */
 	private $id;
 
-	/** @var Process[] */
+	/** @var ClientProcess[] */
 	private $processes;
 
 	/** @var resource[] */
@@ -51,7 +51,7 @@ class Processor
 		$this->streams = array();
 	}
 
-	public function start(Process $process)
+	public function start(ClientProcess $process)
 	{
 		$stream = $process->start();
 

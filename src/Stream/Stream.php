@@ -54,22 +54,22 @@ class Stream
 			throw new StreamException($this->resource);
 		}
 
-		Exceptions::enable();
+		Exceptions::on();
 
 		try {
 			$contents = self::readChunks($this->resource);
 		} catch (ReadIncompleteException $exception) {
-			Exceptions::disable();
+			Exceptions::off();
 			throw $exception;
 		} catch (Throwable $throwable) {
-			Exceptions::disable();
+			Exceptions::off();
 			throw new ReadException($throwable);
 		} catch (Exception $exception) {
-			Exceptions::disable();
+			Exceptions::off();
 			throw new ReadException($exception);
 		}
 
-		Exceptions::disable();
+		Exceptions::off();
 		return $contents;
 	}
 
@@ -93,19 +93,19 @@ class Stream
 			throw new StreamException($this->resource);
 		}
 
-		Exceptions::enable();
+		Exceptions::on();
 
 		try {
 			$bytesWritten = fwrite($this->resource, $contents);
 		} catch (Throwable $throwable) {
-			Exceptions::disable();
+			Exceptions::off();
 			throw new WriteException($throwable);
 		} catch (Exception $exception) {
-			Exceptions::disable();
+			Exceptions::off();
 			throw new WriteException($exception);
 		}
 
-		Exceptions::disable();
+		Exceptions::off();
 
 		$bytesTotal = strlen($contents);
 
@@ -127,55 +127,55 @@ class Stream
 			return true;
 		}
 
-		Exceptions::enable();
+		Exceptions::on();
 
 		try {
 			$success = fclose($this->resource);
 		} catch (Throwable $throwable) {
-			Exceptions::disable();
+			Exceptions::off();
 			throw new CloseException($throwable);
 		} catch (Exception $exception) {
-			Exceptions::disable();
+			Exceptions::off();
 			throw new CloseException($exception);
 		}
 
-		Exceptions::disable();
+		Exceptions::off();
 		return $success;
 	}
 
 	public function setBlocking()
 	{
-		Exceptions::enable();
+		Exceptions::on();
 
 		try {
 			$success = stream_set_blocking($this->resource, true);
 		} catch (Throwable $throwable) {
-			Exceptions::disable();
+			Exceptions::off();
 			throw $throwable;
 		} catch (Exception $exception) {
-			Exceptions::disable();
+			Exceptions::off();
 			throw $exception;
 		}
 
-		Exceptions::disable();
+		Exceptions::off();
 		return $success;
 	}
 
 	public function setNonBlocking()
 	{
-		Exceptions::enable();
+		Exceptions::on();
 
 		try {
 			$success = stream_set_blocking($this->resource, false);
 		} catch (Throwable $throwable) {
-			Exceptions::disable();
+			Exceptions::off();
 			throw $throwable;
 		} catch (Exception $exception) {
-			Exceptions::disable();
+			Exceptions::off();
 			throw $exception;
 		}
 
-		Exceptions::disable();
+		Exceptions::off();
 		return $success;
 	}
 }

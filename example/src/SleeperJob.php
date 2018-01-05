@@ -4,9 +4,8 @@ namespace Example;
 
 use SpencerMortensen\ParallelProcessor\Fork\ForkJob;
 use SpencerMortensen\ParallelProcessor\Shell\ShellJob;
-use SpencerMortensen\ParallelProcessor\Shell\ShellWorkerJob;
 
-class SleeperJob implements ForkJob, ShellJob, ShellWorkerJob
+class SleeperJob implements ForkJob, ShellJob
 {
 	/** @var integer */
 	private $input;
@@ -29,7 +28,7 @@ class SleeperJob implements ForkJob, ShellJob, ShellWorkerJob
 			' ' . escapeshellarg($this->input);
 	}
 
-	public function run()
+	public function start()
 	{
 		$sleeper = new Sleeper();
 		return $sleeper->sleep($this->input);

@@ -23,10 +23,9 @@
  * @copyright 2017 Spencer Mortensen
  */
 
-namespace SpencerMortensen\ParallelProcessor\Shell;
+namespace SpencerMortensen\ParallelProcessor;
 
-use SpencerMortensen\ParallelProcessor\ServerJob;
-
-interface ShellJob extends ShellClientJob, ServerJob
+interface ClientJob
 {
+	public function stop($message);
 }

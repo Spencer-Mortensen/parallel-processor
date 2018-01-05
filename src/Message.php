@@ -22,19 +22,19 @@ class Message
 
 	public static function deserialize($serialized)
 	{
-		Exceptions::enable();
+		Exceptions::on();
 
 		try {
 			$data = unserialize($serialized);
 		} catch (Throwable $throwable) {
-			Exceptions::disable();
+			Exceptions::off();
 			throw ProcessorException::invalidMessage($serialized);
 		} catch (Exception $exception) {
-			Exceptions::disable();
+			Exceptions::off();
 			throw ProcessorException::invalidMessage($serialized);
 		}
 
-		Exceptions::disable();
+		Exceptions::off();
 
 		if (!is_array($data) || (count($data) === 0)) {
 			throw ProcessorException::invalidMessage($serialized);

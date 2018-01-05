@@ -23,9 +23,17 @@
  * @copyright 2017 Spencer Mortensen
  */
 
-namespace SpencerMortensen\ParallelProcessor\Shell;
+namespace SpencerMortensen\ParallelProcessor;
 
-interface ShellWorkerJob
+interface ClientProcess
 {
-	public function run();
+	/**
+	 * @return resource
+	 */
+	public function start();
+
+	/**
+	 * @param string $result
+	 */
+	public function stop($result);
 }

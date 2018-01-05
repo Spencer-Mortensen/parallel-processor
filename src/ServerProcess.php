@@ -23,10 +23,54 @@
  * @copyright 2017 Spencer Mortensen
  */
 
-namespace SpencerMortensen\ParallelProcessor\Shell;
+namespace SpencerMortensen\ParallelProcessor;
 
-use SpencerMortensen\ParallelProcessor\ServerJob;
+use Exception;
+use SpencerMortensen\Exceptions\Exceptions;
+use Throwable;
 
-interface ShellJob extends ShellClientJob, ServerJob
+abstract class ServerProcess
 {
+	const CODE_SUCCESS = 0;
+	const CODE_FAILURE = 1;
+
+	/** @var ServerJob */
+	private $job;
+
+	public function __construct(ServerJob $job)
+	{
+		$this->job = $job;
+	}
+
+	public function run()
+	{
+		Exceptions::on(array($this, 'sendError'));
+
+		try {
+			$result = $this->job->start();
+			$this->sendResult($result);
+		} catch (Throwable $throwable) {
+			$this->sendError($throwable);
+		} catch (Exception $exception) {
+			$this->sendError($exception);
+		}
+
+		Exceptions::off();
+	}
+
+	public function sendResult($result)
+	{
+		$message = Message::serialize(Message::TYPE_RESULT, $result);
+
+		$this->send($message);
+	}
+
+	public function sendError($exception)
+	{
+		$message = Message::serialize(Message::TYPE_ERROR, $exception);
+
+		$this->send($message);
+	}
+
+	abstract protected function send($message);
 }

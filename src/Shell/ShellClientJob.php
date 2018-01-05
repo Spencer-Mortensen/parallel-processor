@@ -25,8 +25,9 @@
 
 namespace SpencerMortensen\ParallelProcessor\Shell;
 
-use SpencerMortensen\ParallelProcessor\ServerJob;
+use SpencerMortensen\ParallelProcessor\ClientJob;
 
-interface ShellJob extends ShellClientJob, ServerJob
+interface ShellClientJob extends ClientJob
 {
+	public function getCommand();
 }

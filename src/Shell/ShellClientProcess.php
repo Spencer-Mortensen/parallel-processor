@@ -25,8 +25,52 @@
 
 namespace SpencerMortensen\ParallelProcessor\Shell;
 
-use SpencerMortensen\ParallelProcessor\ServerJob;
+use SpencerMortensen\ParallelProcessor\ProcessorException;
+use SpencerMortensen\ParallelProcessor\ClientProcess;
 
-interface ShellJob extends ShellClientJob, ServerJob
+class ShellClientProcess implements ClientProcess
 {
+	/** @var integer */
+	const STDOUT = 1;
+
+	/** @var integer */
+	const STDERR = 2;
+
+	/** @var ShellClientJob */
+	private $job;
+
+	/** @var null|resource */
+	private $process;
+
+	public function __construct(ShellClientJob $job)
+	{
+		$this->job = $job;
+	}
+
+	public function start()
+	{
+		$descriptor = array(
+			self::STDOUT => array('pipe', 'w'),
+			self::STDERR => array('pipe', 'w')
+		);
+
+		$command = $this->job->getCommand();
+		$process = proc_open($command, $descriptor, $pipes);
+
+		if (!is_resource($process)) {
+			throw ProcessorException::openProcessError();
+		}
+
+		fclose($pipes[self::STDERR]);
+
+		$this->process = $process;
+		return $pipes[self::STDOUT];
+	}
+
+	public function stop($result)
+	{
+		proc_close($this->process);
+
+		$this->job->stop($result);
+	}
 }

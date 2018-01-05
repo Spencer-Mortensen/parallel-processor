@@ -23,56 +23,74 @@
  * @copyright 2017 Spencer Mortensen
  */
 
-namespace SpencerMortensen\ParallelProcessor\Shell;
+namespace SpencerMortensen\ParallelProcessor\Fork;
 
+use Exception;
 use SpencerMortensen\ParallelProcessor\ProcessorException;
-use SpencerMortensen\ParallelProcessor\Process;
+use SpencerMortensen\ParallelProcessor\ClientProcess;
+use SpencerMortensen\ParallelProcessor\Stream\Stream;
+use SpencerMortensen\ParallelProcessor\ServerProcess;
+use Throwable;
 
-class Shell implements Process
+class ForkProcess extends ServerProcess implements ClientProcess
 {
-	/** @var integer */
-	const STDOUT = 1;
-
-	/** @var integer */
-	const STDERR = 2;
-
-	/** @var ShellJob */
+	/** @var ForkJob */
 	private $job;
 
-	/** @var null|resource */
-	private $process;
+	/** @var Stream */
+	private $a;
 
-	public function __construct(ShellJob $job)
+	/** @var Stream */
+	private $b;
+
+	public function __construct(ForkJob $job)
 	{
+		parent::__construct($job);
+
 		$this->job = $job;
 	}
 
 	public function start()
 	{
-		$descriptor = array(
-			self::STDOUT => array('pipe', 'w'),
-			self::STDERR => array('pipe', 'w')
-		);
+		list($a, $b) = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
 
-		$command = $this->job->getCommand();
-		$process = proc_open($command, $descriptor, $pipes);
+		$this->a = new Stream($a);
+		$this->b = new Stream($b);
 
-		if (!is_resource($process)) {
-			throw ProcessorException::openProcessError();
+		$pid = pcntl_fork();
+
+		// Process
+		if (0 < $pid) {
+			$this->b->close();
+			$this->a->setNonBlocking();
+			return $a;
 		}
 
-		fclose($pipes[self::STDERR]);
+		// Worker
+		if ($pid === 0) {
+			$this->run();
+		}
 
-		$this->process = $process;
-		return $pipes[self::STDOUT];
+		throw ProcessorException::forkError();
+	}
+
+	public function send($message)
+	{
+		try {
+			$this->a->close();
+			$this->b->write($message);
+			$this->b->close();
+		} catch (Throwable $throwable) {
+			exit(1);
+		} catch (Exception $exception) {
+			exit(1);
+		}
+
+		exit(0);
 	}
 
 	public function stop($result)
 	{
-		if (is_resource($this->process)) {
-			proc_close($this->process);
-		}
-
 		$this->job->stop($result);
 	}
 }

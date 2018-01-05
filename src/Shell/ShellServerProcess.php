@@ -25,8 +25,16 @@
 
 namespace SpencerMortensen\ParallelProcessor\Shell;
 
-use SpencerMortensen\ParallelProcessor\ServerJob;
+use SpencerMortensen\ParallelProcessor\ServerProcess;
 
-interface ShellJob extends ShellClientJob, ServerJob
+class ShellServerProcess extends ServerProcess
 {
+	protected function send($message)
+	{
+		$path = 'php://fd/' . ShellClientProcess::STDOUT;
+
+		file_put_contents($path, $message . "\n");
+
+		exit;
+	}
 }

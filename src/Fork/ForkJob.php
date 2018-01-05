@@ -25,9 +25,9 @@
 
 namespace SpencerMortensen\ParallelProcessor\Fork;
 
-interface ForkJob
-{
-	public function run();
+use SpencerMortensen\ParallelProcessor\ClientJob;
+use SpencerMortensen\ParallelProcessor\ServerJob;
 
-	public function stop($message);
+interface ForkJob extends ClientJob, ServerJob
+{
 }

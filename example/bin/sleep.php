@@ -2,13 +2,22 @@
 
 namespace Example;
 
-use SpencerMortensen\ParallelProcessor\Shell\ShellWorker;
+use Exception;
+use SpencerMortensen\Exceptions\Exceptions;
+use SpencerMortensen\ParallelProcessor\Shell\ShellServerProcess;
+use Throwable;
 
-require dirname(__DIR__) . '/bootstrap.php';
+require dirname(__DIR__) . '/autoload.php';
 
-$duration = (integer)$GLOBALS['argv'][1];
+Exceptions::on();
 
-$worker = new ShellWorker();
-$job = new SleeperJob($duration);
+try {
+	$duration = (integer)$GLOBALS['argv'][1];
 
-$worker->run($job);
+	$worker = new ShellServerProcess(new SleeperJob($duration));
+	$worker->run();
+} catch (Throwable $throwable) {
+} catch (Exception $exception) {
+}
+
+Exceptions::off();
