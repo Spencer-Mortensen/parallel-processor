@@ -9,7 +9,7 @@ use Throwable;
 
 require 'autoload.php';
 
-$results = array();
+$results = [];
 
 $processor = new Processor();
 
