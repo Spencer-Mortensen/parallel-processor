@@ -25,6 +25,7 @@
 
 namespace SpencerMortensen\ParallelProcessor\Stream;
 
+use Error;
 use Exception;
 use SpencerMortensen\Exceptions\Exceptions;
 use SpencerMortensen\ParallelProcessor\Stream\Exceptions\CloseException;
@@ -33,7 +34,6 @@ use SpencerMortensen\ParallelProcessor\Stream\Exceptions\ReadException;
 use SpencerMortensen\ParallelProcessor\Stream\Exceptions\ReadIncompleteException;
 use SpencerMortensen\ParallelProcessor\Stream\Exceptions\WriteException;
 use SpencerMortensen\ParallelProcessor\Stream\Exceptions\WriteIncompleteException;
-use Throwable;
 
 class Stream
 {
@@ -54,23 +54,18 @@ class Stream
 			throw new StreamException($this->resource);
 		}
 
-		Exceptions::on();
-
 		try {
-			$contents = self::readChunks($this->resource);
+			Exceptions::on();
+			return self::readChunks($this->resource);
 		} catch (ReadIncompleteException $exception) {
-			Exceptions::off();
 			throw $exception;
-		} catch (Throwable $throwable) {
-			Exceptions::off();
-			throw new ReadException($throwable);
 		} catch (Exception $exception) {
-			Exceptions::off();
 			throw new ReadException($exception);
+		} catch (Error $error) {
+			throw new ReadException($error);
+		} finally {
+			Exceptions::off();
 		}
-
-		Exceptions::off();
-		return $contents;
 	}
 
 	private static function readChunks($resource)
@@ -93,19 +88,16 @@ class Stream
 			throw new StreamException($this->resource);
 		}
 
-		Exceptions::on();
-
 		try {
+			Exceptions::on();
 			$bytesWritten = fwrite($this->resource, $contents);
-		} catch (Throwable $throwable) {
-			Exceptions::off();
-			throw new WriteException($throwable);
 		} catch (Exception $exception) {
-			Exceptions::off();
 			throw new WriteException($exception);
+		} catch (Error $error) {
+			throw new WriteException($error);
+		} finally {
+			Exceptions::off();
 		}
-
-		Exceptions::off();
 
 		$bytesTotal = strlen($contents);
 
@@ -127,55 +119,35 @@ class Stream
 			return true;
 		}
 
-		Exceptions::on();
-
 		try {
-			$success = fclose($this->resource);
-		} catch (Throwable $throwable) {
-			Exceptions::off();
-			throw new CloseException($throwable);
+			Exceptions::on();
+			return fclose($this->resource);
 		} catch (Exception $exception) {
-			Exceptions::off();
 			throw new CloseException($exception);
+		} catch (Error $error) {
+			throw new CloseException($error);
+		} finally {
+			Exceptions::off();
 		}
-
-		Exceptions::off();
-		return $success;
 	}
 
 	public function setBlocking()
 	{
-		Exceptions::on();
-
 		try {
-			$success = stream_set_blocking($this->resource, true);
-		} catch (Throwable $throwable) {
+			Exceptions::on();
+			return stream_set_blocking($this->resource, true);
+		} finally {
 			Exceptions::off();
-			throw $throwable;
-		} catch (Exception $exception) {
-			Exceptions::off();
-			throw $exception;
 		}
-
-		Exceptions::off();
-		return $success;
 	}
 
 	public function setNonBlocking()
 	{
-		Exceptions::on();
-
 		try {
-			$success = stream_set_blocking($this->resource, false);
-		} catch (Throwable $throwable) {
+			Exceptions::on();
+			return stream_set_blocking($this->resource, false);
+		} finally {
 			Exceptions::off();
-			throw $throwable;
-		} catch (Exception $exception) {
-			Exceptions::off();
-			throw $exception;
 		}
-
-		Exceptions::off();
-		return $success;
 	}
 }

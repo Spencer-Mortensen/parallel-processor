@@ -9,15 +9,15 @@ use Throwable;
 
 require dirname(__DIR__) . '/autoload.php';
 
-Exceptions::on();
-
 try {
+	Exceptions::on();
+
 	$duration = (integer)$GLOBALS['argv'][1];
 
 	$worker = new ShellServerProcess(new SleeperJob($duration));
 	$worker->run();
 } catch (Throwable $throwable) {
 } catch (Exception $exception) {
+} finally {
+	Exceptions::off();
 }
-
-Exceptions::off();
